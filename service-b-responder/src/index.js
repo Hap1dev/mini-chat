@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT;
 const DEFAULT = process.env.ENGINE;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 class BaseEngine{
 	async respond({ workspace, text }){
@@ -39,10 +39,11 @@ app.post("/respond", async (req, res) => {
 	const workspace = (req.body.workspace !== undefined) ? req.body.workspace : "default";
 	const text = (req.body.text !== undefined) ? req.body.text : "";
 	const slow = (req.body.slow !== undefined) ? req.body.slow : false;
-  	const engine = engines[req.body.provider] || engines[DEFAULT];
-  	let response = await engine.respond({ workspace, text });
-  	if (slow) response = response + " ".repeat(20) + " (slower mode appended extra text.)";
- 	 res.json({ reply: response });
+	const engineName = req.body.provider || DEFAULT;
+  const engine = engines[engineName] || engines[DEFAULT];
+  let response = await engine.respond({ workspace, text });
+  if (slow) response = response + " ".repeat(20);
+ 	res.json({ reply: response, engine: engineName });
 });
 
 app.listen(PORT, () => {
