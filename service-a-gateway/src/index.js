@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import axios from "axios";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT;
 const histories = {};
 
+app.use(cors());
 app.use(bodyParser.json());
 
 function saveMessage(tenant, message) {
@@ -16,7 +18,7 @@ function saveMessage(tenant, message) {
     histories[tenant].push(message);
 }
 
-/* POST /send : client sends a message; Gateway calls Responder and streams reply via server-sent-events (SSE) */
+/* POST /send: client sends a message; Gateway calls Responder and streams reply via server-sent-events (SSE) */
 app.post('/send', async (req, res) => {
     const tenant = req.headers['x-tenant-id'] || 'default';
     const {
@@ -38,6 +40,7 @@ app.post('/send', async (req, res) => {
     const responderRes = await axios.post(process.env.RESPONDER_URL, {
         workspace: tenant,
         text,
+        provider: req.body.provider,
         slow: false
     });
     const data = responderRes.data;
@@ -75,28 +78,31 @@ app.get('/stream/:tenant/:msgId', async (req, res) => {
         Connection: 'keep-alive'
     });
 
-    // Re-retrieve the last user message text (simple approach)
+    // Re-retrieve the last user message text
     const userMsg = (histories[tenant] || []).find(m => m.id === msgId);
     const userText = userMsg ? userMsg.text : '';
 
-    // Ask Responder again (or you could pass a previously obtained reply). We'll call it to get reply.
-    const r = await axios.post(
-  process.env.RESPONDER_URL || 'http://localhost:4001/respond',
-  { workspace: tenant, text: userText, slow: true }
+    // Ask Responder again. We'll call it to get reply.
+    const r = await axios.post(process.env.RESPONDER_URL, {
+        workspace: tenant, 
+        text: userText, 
+        provider: req.query.provider || "echo",
+        slow: true
+    }
 );
 const jr = r.data;
 
 
     const full = jr.reply || '...';
 
-    // Chunking strategy: split by words into ~10-word chunks, send with small delay
+    // chunking using split-by word (10 words per chunk). send with small delay
     const words = full.split(/\s+/);
     let chunk = '';
     for (let i = 0; i < words.length; i++) {
         chunk += (i ? ' ' : '') + words[i];
         if ((i % 8) === 0 && i !== 0) {
             res.write(`data: ${chunk}\n\n`);
-            // update in-memory assistant message
+            // update assistant message in memory (history)
             const botMsg = (histories[tenant] || []).find(m => m.id === msgId + '-bot');
             if (botMsg) botMsg.text += (botMsg.text ? ' ' : '') + chunk;
             chunk = '';
