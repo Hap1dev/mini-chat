@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { LANG } from './i18n';
 
 export default function App(){
+  const GATEWAY_URL=import.meta.env.GATEWAY_URL;
   const [tenant, setTenant] = useState('tenant-1');
   const [text, setText] = useState('');
   const [provider, setProvider] = useState('echo');
@@ -14,7 +15,7 @@ export default function App(){
 
 
   useEffect(()=> {
-    fetch('/history', { headers: {'x-tenant-id': tenant} })
+    fetch(`${GATEWAY_URL}/history`, { headers: {'x-tenant-id': tenant} })
       .then(r=>r.json()).then(d => setMsgs(d.history || []))
       .catch(()=>{});
   }, [tenant]);
@@ -31,13 +32,13 @@ export default function App(){
       const botMsg = { id: botId, role: 'assistant', text: '' };
       setMsgs(m => [...m, botMsg]);
       
-      fetch('/send', {
+      fetch(`${GATEWAY_URL}/send`, {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-Tenant-Id': tenant},
           body: JSON.stringify({ text, provider })
       }).then(r => r.json()).then(({ streamUrl, msgId: sentId }) => {
           setStreaming(true);
-          const es = new EventSource(`${streamUrl}?provider=${provider}`);
+          const es = new EventSource(`${GATEWAY_URL}${streamUrl}?provider=${provider}`);
           
           // Track accumulated response
           let accumulatedResponse = '';

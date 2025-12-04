@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/send': 'https://mini-chat-service-a-gateway.onrender.com',
-      '/stream': 'https://mini-chat-service-a-gateway.onrender.com',
-      '/history': 'https://mini-chat-service-a-gateway.onrender.com'
+      '/send': 'http://localhost:3000',
+      '/stream': 'http://localhost:3000',
+      '/history': 'http://localhost:3000'
     }
   }
 });
