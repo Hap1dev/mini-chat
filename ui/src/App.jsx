@@ -15,7 +15,7 @@ export default function App(){
 
 
   useEffect(()=> {
-    fetch(`${GATEWAY_URL}/history`, { headers: {'x-tenant-id': tenant} })
+    fetch(`${GATEWAY_URL}/history`, { headers: {'X-Tenant-Id': tenant} })
       .then(r=>r.json()).then(d => setMsgs(d.history || []))
       .catch(()=>{});
   }, [tenant]);
