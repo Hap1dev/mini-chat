@@ -177,7 +177,7 @@ Streaming is implemented using Server-Sent Events (SSE):
 
 ## 🎥 Demo
 
-![Streaming Demo]
+https://github.com/user-attachments/assets/81e7018e-7266-4e0c-a41f-b2a0eff93f57
 
 ---
 
@@ -187,4 +187,4 @@ For questions or feedback, feel free to reach out.
 
 ---
 
-**Built as part of a technical assignment for a startup interview.**
+**Built as part of a technical assignment.**
