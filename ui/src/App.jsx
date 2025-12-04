@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { LANG } from './i18n';
 
 export default function App(){
-  const GATEWAY_URL=import.meta.env.GATEWAY_URL;
+  const GATEWAY_URL=import.meta.env.VITE_GATEWAY_URL;
   const [tenant, setTenant] = useState('tenant-1');
   const [text, setText] = useState('');
   const [provider, setProvider] = useState('echo');
