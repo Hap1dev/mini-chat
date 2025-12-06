@@ -12,6 +12,7 @@ export default function App(){
   const esRef = useRef(null);
   const [tenantList, setTenantList] = useState(['tenant-1']);
   const [newTenant, setNewTenant] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
 
   useEffect(()=> {
@@ -74,72 +75,154 @@ export default function App(){
   }
 
   return (
-    <div style={{maxWidth:700, margin:'20px auto', fontFamily:'sans-serif'}}>
-      <div>
-      {/* Tenant Selector */}
-      <label>{LANG[lang].tenantLabel}: </label>
-
-      {/* Dropdown of existing tenants */}
-      <select
-        value={tenant}
-        onChange={(e) => setTenant(e.target.value)}
-        style={{ marginRight: 10 }}
-      >
-        {tenantList.map(t => (
-          <option key={t} value={t}>{t}</option>
-        ))}
-      </select>
-
-      {/* Add new tenant */}
-      <input
-        placeholder="New tenant…"
-        value={newTenant}
-        onChange={(e) => setNewTenant(e.target.value)}
-        style={{ width: 120, marginRight: 5 }}
-      />
-      <button
-        onClick={() => {
-          if (!newTenant.trim()) return;
-          if (!tenantList.includes(newTenant.trim())) {
-            setTenantList(prev => [...prev, newTenant.trim()]);
-          }
-          setTenant(newTenant.trim());
-          setNewTenant('');
-        }}
-      >
-        Add
-      </button>
-
-      {/* Language selector */}
-      <select
-        value={lang}
-        onChange={(e) => setLang(e.target.value)}
-        style={{ marginLeft: 10 }}
-      >
-        <option value="en">EN</option>
-        <option value="es">ES</option>
-      </select>
-    </div>
-
-
-    <div aria-live="polite" style={{border:'1px solid #ccc', padding:10, minHeight:200, marginTop:10}}>
-      {msgs.map(m => <div key={m.id} style={{textAlign: m.role==='user' ? 'right' : 'left', margin:'6px 0'}}>
-        <div style={{display:'inline-block', padding:8, borderRadius:8, background: m.role==='user' ? '#d1e7dd' : '#f1f1f1'}}>
-          <strong style={{fontSize:12}}>{m.role}</strong><div>{m.text}</div>
+  <div className={`container-fluid vh-100 ${darkMode ? 'bg-dark text-light' : 'bg-light text-dark'}`}>
+    {/* Header with controls */}
+    <div className="row py-3 border-bottom">
+      <div className="col-12">
+        <div className="d-flex flex-wrap align-items-center justify-content-between">
+          {/* Title */}
+          <h1 className="h3 mb-2 mb-md-0">mini-chat</h1>
+          
+          {/* Controls group */}
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            {/* Dark/Light mode toggle */}
+            <div className="form-check form-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="darkModeToggle"
+                checked={darkMode}
+                onChange={(e) => setDarkMode(e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="darkModeToggle">
+                {darkMode ? '🌙 Dark' : '☀️ Light'}
+              </label>
+            </div>
+            
+            {/* Language selector */}
+            <select
+              className="form-select form-select-sm"
+              value={lang}
+              onChange={(e) => setLang(e.target.value)}
+              style={{ width: 'auto' }}
+            >
+              <option value="en">EN</option>
+              <option value="es">ES</option>
+            </select>
+          </div>
         </div>
-      </div>)}
-      {streaming && <div><em>typing...</em></div>}
+      </div>
+      
+      {/* Tenant selector row */}
+      <div className="col-12 mt-3">
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          <label className="form-label mb-0">{LANG[lang].tenantLabel}:</label>
+          
+          {/* Dropdown of existing tenants */}
+          <select
+            className="form-select form-select-sm"
+            value={tenant}
+            onChange={(e) => setTenant(e.target.value)}
+            style={{ width: 'auto' }}
+          >
+            {tenantList.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+          
+          {/* Add new tenant */}
+          <div className="input-group input-group-sm" style={{ width: 'auto' }}>
+            <input
+              className="form-control"
+              placeholder="New tenant…"
+              value={newTenant}
+              onChange={(e) => setNewTenant(e.target.value)}
+              style={{ width: '150px' }}
+            />
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={() => {
+                if (!newTenant.trim()) return;
+                if (!tenantList.includes(newTenant.trim())) {
+                  setTenantList(prev => [...prev, newTenant.trim()]);
+                }
+                setTenant(newTenant.trim());
+                setNewTenant('');
+              }}
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div style={{marginTop:10}}>
-        <select value={provider} onChange={e=>setProvider(e.target.value)}>
-          <option value="echo">echo</option>
-          <option value="rule">rule-based</option>
-          <option value="gpt">gpt</option>
-        </select>
-
-        <input aria-label="message" value={text} onChange={e=>setText(e.target.value)} placeholder={LANG[lang].placeholder} style={{width:'70%'}} onKeyDown={e=>{ if(e.key==='Enter') send(); }} />
-        <button onClick={send} style={{marginLeft:8}}>{LANG[lang].send}</button>
+    
+    {/* Chat container */}
+    <div className="row flex-grow-1" style={{ height: 'calc(100vh - 120px)' }}>
+      <div className="col-12 d-flex flex-column h-100">
+        {/* Chat window - full screen with scroll */}
+        <div 
+          className={`flex-grow-1 overflow-auto border rounded p-3 mb-3 ${darkMode ? 'bg-dark border-secondary' : 'bg-white border-light'}`}
+          aria-live="polite"
+          style={{ minHeight: 0 }} /* Important for flex child scrolling */
+        >
+          {msgs.map(m => (
+            <div 
+              key={m.id} 
+              className={`d-flex ${m.role === 'user' ? 'justify-content-end' : 'justify-content-start'} mb-2`}
+            >
+              <div 
+                className={`p-2 rounded ${m.role === 'user' 
+                  ? (darkMode ? 'bg-primary text-white' : 'bg-primary text-white') 
+                  : (darkMode ? 'bg-secondary text-light' : 'bg-light text-dark')}`}
+                style={{ maxWidth: '80%' }}
+              >
+                <small className="d-block opacity-75">{m.role}</small>
+                <div className="mt-1">{m.text}</div>
+              </div>
+            </div>
+          ))}
+          {streaming && (
+            <div className="text-muted">
+              <em>thinking...</em>
+            </div>
+          )}
+        </div>
+        
+        {/* Input area with provider selector */}
+        <div className="d-flex gap-2 mb-3">
+          {/* Provider selector */}
+          <select 
+            className="form-select"
+            value={provider} 
+            onChange={e => setProvider(e.target.value)}
+            style={{ width: 'auto', minWidth: '120px' }}
+          >
+            <option value="echo">Echo</option>
+            <option value="rule">Rule</option>
+            <option value="gpt">GPT</option>
+          </select>
+          
+          {/* Message input and send button */}
+          <div className="input-group flex-grow-1">
+            <input
+              className={`form-control ${darkMode ? 'bg-dark text-light border-secondary' : ''}`}
+              aria-label="message"
+              value={text}
+              onChange={e => setText(e.target.value)}
+              placeholder={LANG[lang].placeholder}
+              onKeyDown={e => { if(e.key === 'Enter') send(); }}
+            />
+            <button 
+              className="btn btn-primary"
+              onClick={send}
+            >
+              {LANG[lang].send}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>);
+  </div>
+);
 }
