@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { LANG } from './i18n';
 
 export default function App(){
-  // const GATEWAY_URL=import.meta.env.VITE_GATEWAY_URL;
+  const GATEWAY_URL=import.meta.env.VITE_GATEWAY_URL;
   const [tenant, setTenant] = useState('tenant-1');
   const [text, setText] = useState('');
   const [provider, setProvider] = useState('echo');
@@ -16,7 +16,7 @@ export default function App(){
 
 
   useEffect(()=> {
-    fetch(`/history`, { headers: {'X-Tenant-Id': tenant} })
+    fetch(`${GATEWAY_URL}/history`, { headers: {'X-Tenant-Id': tenant} })
       .then(r=>r.json()).then(d => setMsgs(d.history || []))
       .catch(()=>{});
   }, [tenant]);
@@ -33,13 +33,13 @@ export default function App(){
       const botMsg = { id: botId, role: 'assistant', text: '' };
       setMsgs(m => [...m, botMsg]);
       
-      fetch(`/send`, {
+      fetch(`${GATEWAY_URL}/send`, {
           method: 'POST',
           headers: {'Content-Type':'application/json', 'X-Tenant-Id': tenant},
           body: JSON.stringify({ text, provider })
       }).then(r => r.json()).then(({ streamUrl, msgId: sentId }) => {
           setStreaming(true);
-          const es = new EventSource(`${streamUrl}?provider=${provider}`);
+          const es = new EventSource(`${GATEWAY_URL}${streamUrl}?provider=${provider}`);
           
           // Track accumulated response
           let accumulatedResponse = '';
@@ -101,7 +101,7 @@ export default function App(){
             
             {/* Language selector */}
             <select
-              className="form-select form-select-sm"
+              className={`form-select form-select-sm ${darkMode ? 'bg-dark text-light border-secondary' : ''}`}
               value={lang}
               onChange={(e) => setLang(e.target.value)}
               style={{ width: 'auto' }}
@@ -120,7 +120,7 @@ export default function App(){
           
           {/* Dropdown of existing tenants */}
           <select
-            className="form-select form-select-sm"
+            className={`form-select form-select-sm ${darkMode ? 'bg-dark text-light border-secondary' : ''}`}
             value={tenant}
             onChange={(e) => setTenant(e.target.value)}
             style={{ width: 'auto' }}
@@ -133,7 +133,7 @@ export default function App(){
           {/* Add new tenant */}
           <div className="input-group input-group-sm" style={{ width: 'auto' }}>
             <input
-              className="form-control"
+              className={`form-control ${darkMode ? 'bg-dark text-light border-secondary dark-mode-input' : ''}`}
               placeholder="New tenant…"
               value={newTenant}
               onChange={(e) => setNewTenant(e.target.value)}
@@ -193,7 +193,7 @@ export default function App(){
         <div className="d-flex gap-2 mb-3">
           {/* Provider selector */}
           <select 
-            className="form-select"
+            className={`form-select ${darkMode ? 'bg-dark text-light border-secondary' : ''}`}
             value={provider} 
             onChange={e => setProvider(e.target.value)}
             style={{ width: 'auto', minWidth: '120px' }}
@@ -206,7 +206,7 @@ export default function App(){
           {/* Message input and send button */}
           <div className="input-group flex-grow-1">
             <input
-              className={`form-control ${darkMode ? 'bg-dark text-light border-secondary' : ''}`}
+              className={`form-control ${darkMode ? 'bg-dark text-light border-secondary dark-mode-input' : ''}`}
               aria-label="message"
               value={text}
               onChange={e => setText(e.target.value)}

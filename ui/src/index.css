@@ -1,0 +1,4 @@
+.dark-mode-input::placeholder {
+  color: #bbb;   /* or any lighter color */
+  opacity: 1;    /* ensures full visibility */
+}
