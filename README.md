@@ -60,6 +60,12 @@ npm run dev  # runs on http://localhost:5173
 
 ---
 
+## 🎥 Setup Video Guide
+
+https://youtu.be/4sAEUdaFZGQ
+
+---
+
 ## 🏗️ Architecture Overview
 
 The system consists of three main components:
